@@ -1,0 +1,55 @@
+# DCE-MRI habitat analysis, k = 3
+# Wash-in rate / wash-out rate computed from the 4-D DCE series.
+
+project:
+  name: dce_washin_washout_k3
+  seed: 42
+  output_dir: results/dce_k3
+
+dataset:
+  root: data/raw
+  case_glob: "*"
+  roi_pattern: "{case}/roi.nii.gz"
+  series_pattern: "{case}/dce.nii.gz"
+
+resample:
+  enabled: true
+  target_spacing: [1.0, 1.0, 3.0]
+  order_param: 3
+  order_mask: 0
+
+preprocessing:
+  percentile_clip: [1.0, 99.0]
+  minmax_scale: true
+  fill_nonfinite: roi_median
+  min_roi_voxels: 30
+
+dce:
+  baseline_frames: 3
+  temporal_resolution_s: null   # null -> read TR from the NIfTI header
+  time_unit: min                # report rates per minute
+  smooth_frames_sigma: 0.0
+  robust_peak: false
+
+clustering:
+  n_clusters: 3                 # fixed by the study design
+  k_range: [2, 10]              # used for the reported evaluation curves
+  selection: mode
+  evaluate: true
+  n_init: 20
+  max_samples_for_eval: 50000
+  max_voxels_for_fit: 300000
+  feature_space: normalized
+
+metrics:
+  volume: true
+  parameter_stats: true
+  msi: true
+  ithscore: false               # requires: pip install ITHscore
+
+output:
+  csv_encoding: utf-8-sig
+  also_gbk: false
+  save_plots: true
+  save_habitat_maps: true
+  max_case_figures: 20
